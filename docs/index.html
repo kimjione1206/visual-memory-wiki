@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Memory Wiki Interactive Figure</title>
+  <style>
+    :root {
+      --paper: #fbfaf7;
+      --ink: #18212b;
+      --muted: #687584;
+      --line: #d8d1c5;
+      --blue: #1f6f8b;
+      --blue-soft: #dfeff5;
+      --red: #cf4f31;
+      --red-soft: #f7e2dc;
+      --green: #2f7d4f;
+      --green-soft: #e4f1e8;
+      --gold: #b9811f;
+      --panel: #fffdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    header {
+      padding: 34px clamp(18px, 4vw, 54px) 24px;
+      border-bottom: 1px solid var(--line);
+      background: #fffaf1;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 1.04;
+    }
+
+    header p {
+      max-width: 980px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.58;
+    }
+
+    main {
+      padding: 24px clamp(14px, 3vw, 36px) 42px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .figure-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) 420px;
+      gap: 18px;
+      min-height: 720px;
+    }
+
+    .canvas, .side-panel, .caption, .method-strip {
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    .canvas {
+      position: relative;
+      overflow: hidden;
+      min-height: 720px;
+    }
+
+    .canvas svg {
+      width: 100%;
+      height: 100%;
+      min-height: 720px;
+      display: block;
+    }
+
+    .side-panel {
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      min-height: 720px;
+    }
+
+    .panel-section {
+      padding: 18px 20px;
+      border-bottom: 1px solid #ece5da;
+    }
+
+    .panel-section:last-child {
+      border-bottom: 0;
+    }
+
+    h2, h3 {
+      margin: 0 0 10px;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    h3 {
+      font-size: 15px;
+      color: #344554;
+    }
+
+    .switch-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid #cfc6b8;
+      background: #f7f1e7;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+      padding: 10px 12px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    button.active {
+      border-color: var(--blue);
+      background: var(--blue-soft);
+      color: #12465b;
+    }
+
+    .metric-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .metric {
+      display: grid;
+      gap: 6px;
+    }
+
+    .metric-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .bar {
+      height: 11px;
+      background: #eee7dc;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      width: var(--w);
+      background: var(--blue);
+      transition: width .25s ease;
+    }
+
+    .metric.generated .bar span {
+      background: var(--red);
+    }
+
+    .metric.textless .bar span {
+      background: var(--green);
+    }
+
+    .finding {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .node-list {
+      display: grid;
+      gap: 8px;
+      max-height: 330px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .node-card {
+      border: 1px solid #e5ddd1;
+      background: #fff;
+      padding: 10px;
+      cursor: pointer;
+      border-left: 5px solid transparent;
+    }
+
+    .node-card.active {
+      border-left-color: var(--red);
+      background: #fff8f4;
+    }
+
+    .node-card strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 3px;
+    }
+
+    .node-card span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .caption {
+      padding: 16px 18px;
+      line-height: 1.55;
+      color: #344554;
+      font-size: 14px;
+    }
+
+    .method-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0;
+    }
+
+    .method-step {
+      padding: 14px 14px 16px;
+      border-right: 1px solid #ebe3d6;
+      min-height: 112px;
+    }
+
+    .method-step:last-child {
+      border-right: 0;
+    }
+
+    .method-step b {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .method-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .flow-label, .svg-label, .small-label {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      fill: var(--ink);
+      font-weight: 800;
+      paint-order: stroke;
+      stroke: #fffdf8;
+      stroke-width: 5px;
+    }
+
+    .small-label {
+      font-size: 12px;
+      font-weight: 700;
+      fill: #344554;
+    }
+
+    .flow-label {
+      font-size: 15px;
+    }
+
+    .svg-label {
+      font-size: 13px;
+    }
+
+    .edge {
+      stroke: #cfd6dc;
+      stroke-width: 2.5;
+      opacity: .85;
+    }
+
+    .walk-edge {
+      stroke: var(--red);
+      stroke-width: 5;
+      opacity: .95;
+    }
+
+    .stage-box {
+      fill: #fffdf8;
+      stroke: #cfc6b8;
+      stroke-width: 2;
+    }
+
+    .stage-box.active {
+      stroke: var(--red);
+      stroke-width: 4;
+      fill: #fff8f4;
+    }
+
+    .graph-node circle {
+      fill: #fff;
+      stroke: #446476;
+      stroke-width: 3;
+      cursor: pointer;
+      transition: stroke-width .2s ease;
+    }
+
+    .graph-node.active circle {
+      stroke: var(--red);
+      stroke-width: 6;
+      fill: #fff2ec;
+    }
+
+    .graph-node image {
+      pointer-events: none;
+    }
+
+    .badge {
+      fill: var(--red);
+    }
+
+    .badge-text {
+      fill: white;
+      font-size: 12px;
+      font-weight: 800;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    .legend {
+      fill: #fffdf8;
+      stroke: #d8d1c5;
+    }
+
+    .legend-text {
+      fill: #566575;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1050px) {
+      .figure-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        min-height: auto;
+      }
+
+      .method-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .method-step {
+        border-right: 0;
+        border-bottom: 1px solid #ebe3d6;
+      }
+
+      .method-step:last-child {
+        border-bottom: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Visual Memory Wiki: Interactive Figure</h1>
+    <p>
+      A paper-style interactive explanation of the experiment: Markdown notes become image cards, short visual cues retrieve nodes in a shared coordinate space, and each retrieved node points back to source text.
+    </p>
+  </header>
+
+  <main>
+    <section class="method-strip" aria-label="method overview">
+      <div class="method-step">
+        <b>1. Upload notes</b>
+        <p>Markdown chunks are treated as source-grounded knowledge units.</p>
+      </div>
+      <div class="method-step">
+        <b>2. Make image handles</b>
+        <p>Each chunk receives a visual card. The image is an address, not a fact.</p>
+      </div>
+      <div class="method-step">
+        <b>3. Embed cards</b>
+        <p>CLIP places image cards into a visual coordinate space.</p>
+      </div>
+      <div class="method-step">
+        <b>4. Query by cue</b>
+        <p>An LLM should compress task context into a short visual cue.</p>
+      </div>
+      <div class="method-step">
+        <b>5. Read sources</b>
+        <p>The AI reads attached source notes, not generated image details.</p>
+      </div>
+    </section>
+
+    <section class="figure-shell">
+      <div class="canvas">
+        <svg viewBox="0 0 1100 720" role="img" aria-label="interactive visual memory wiki figure">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca8b3"></path>
+            </marker>
+            <linearGradient id="cueGradient" x1="0" x2="1">
+              <stop offset="0" stop-color="#1f6f8b"></stop>
+              <stop offset="1" stop-color="#cf4f31"></stop>
+            </linearGradient>
+            <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#1c2731" flood-opacity=".14"></feDropShadow>
+            </filter>
+          </defs>
+
+          <rect x="28" y="30" width="288" height="156" rx="10" class="stage-box active" data-stage="notes"></rect>
+          <text x="52" y="62" class="flow-label">Source notes</text>
+          <g transform="translate(58,82)">
+            <rect x="0" y="0" width="70" height="80" rx="5" fill="#f7f1e7" stroke="#6f7e8c"></rect>
+            <line x1="14" y1="22" x2="54" y2="22" stroke="#748494" stroke-width="4"></line>
+            <line x1="14" y1="40" x2="48" y2="40" stroke="#748494" stroke-width="4"></line>
+            <line x1="14" y1="58" x2="56" y2="58" stroke="#748494" stroke-width="4"></line>
+            <rect x="88" y="10" width="70" height="80" rx="5" fill="#f7f1e7" stroke="#6f7e8c"></rect>
+            <line x1="102" y1="32" x2="142" y2="32" stroke="#748494" stroke-width="4"></line>
+            <line x1="102" y1="50" x2="136" y2="50" stroke="#748494" stroke-width="4"></line>
+            <rect x="176" y="0" width="70" height="80" rx="5" fill="#f7f1e7" stroke="#6f7e8c"></rect>
+            <line x1="190" y1="22" x2="230" y2="22" stroke="#748494" stroke-width="4"></line>
+            <line x1="190" y1="40" x2="224" y2="40" stroke="#748494" stroke-width="4"></line>
+          </g>
+
+          <line x1="318" y1="108" x2="412" y2="108" stroke="#9ca8b3" stroke-width="3" marker-end="url(#arrow)"></line>
+
+          <rect x="414" y="30" width="278" height="156" rx="10" class="stage-box" data-stage="cards"></rect>
+          <text x="438" y="62" class="flow-label">Image handles</text>
+          <g transform="translate(446,86)">
+            <rect x="0" y="0" width="74" height="74" rx="8" fill="#fdfaf4" stroke="#2f7d4f" stroke-width="4"></rect>
+            <path d="M14 52 C30 18 42 70 60 22" fill="none" stroke="#2f7d4f" stroke-width="5"></path>
+            <rect x="92" y="-8" width="74" height="74" rx="8" fill="#fdfaf4" stroke="#cf4f31" stroke-width="4"></rect>
+            <circle cx="129" cy="29" r="22" fill="none" stroke="#cf4f31" stroke-width="6"></circle>
+            <rect x="184" y="0" width="74" height="74" rx="8" fill="#fdfaf4" stroke="#1f6f8b" stroke-width="4"></rect>
+            <path d="M202 56 L222 20 L242 56 Z" fill="none" stroke="#1f6f8b" stroke-width="6"></path>
+          </g>
+
+          <line x1="692" y1="108" x2="792" y2="108" stroke="#9ca8b3" stroke-width="3" marker-end="url(#arrow)"></line>
+
+          <rect x="794" y="30" width="276" height="156" rx="10" class="stage-box" data-stage="space"></rect>
+          <text x="818" y="62" class="flow-label">Shared space</text>
+          <g transform="translate(840,86)">
+            <line x1="0" y1="70" x2="180" y2="70" stroke="#9ca8b3" stroke-width="3"></line>
+            <line x1="18" y1="92" x2="18" y2="0" stroke="#9ca8b3" stroke-width="3"></line>
+            <circle cx="60" cy="32" r="13" fill="#2f7d4f"></circle>
+            <circle cx="84" cy="48" r="13" fill="#2f7d4f" opacity=".75"></circle>
+            <circle cx="132" cy="28" r="13" fill="#cf4f31"></circle>
+            <circle cx="150" cy="54" r="13" fill="#cf4f31" opacity=".75"></circle>
+            <circle cx="104" cy="82" r="13" fill="#1f6f8b"></circle>
+          </g>
+
+          <rect x="48" y="248" width="292" height="128" rx="10" class="stage-box" data-stage="query"></rect>
+          <text x="72" y="280" class="flow-label">Task context</text>
+          <text x="72" y="314" class="small-label">Long task prompt</text>
+          <text x="72" y="340" class="small-label">must be compressed first.</text>
+          <path d="M340 310 C428 260 504 244 590 238" fill="none" stroke="#9ca8b3" stroke-width="3" marker-end="url(#arrow)"></path>
+
+          <rect x="392" y="244" width="320" height="136" rx="10" fill="#fffdf8" stroke="url(#cueGradient)" stroke-width="4" filter="url(#softShadow)"></rect>
+          <text x="420" y="280" class="flow-label">Short visual cue</text>
+          <text id="cueText" x="420" y="314" class="small-label">“image card as a doorway”</text>
+          <text x="420" y="342" class="small-label">This is the preferred retrieval input.</text>
+          <path d="M712 312 C784 336 830 388 858 456" fill="none" stroke="#cf4f31" stroke-width="4" marker-end="url(#arrow)"></path>
+
+          <g id="graphEdges"></g>
+          <g id="graphNodes"></g>
+
+          <rect x="52" y="612" width="452" height="70" rx="9" class="legend"></rect>
+          <circle cx="80" cy="636" r="9" fill="#fff" stroke="#446476" stroke-width="3"></circle>
+          <text x="98" y="641" class="legend-text">image node</text>
+          <line x1="198" y1="636" x2="252" y2="636" class="walk-edge"></line>
+          <text x="266" y="641" class="legend-text">retrieval path</text>
+          <line x1="376" y1="636" x2="430" y2="636" class="edge"></line>
+          <text x="444" y="641" class="legend-text">similarity edge</text>
+          <text x="72" y="666" class="legend-text">Click nodes or metric buttons to inspect the figure.</text>
+        </svg>
+      </div>
+
+      <aside class="side-panel">
+        <section class="panel-section">
+          <h2>Retrieval condition</h2>
+          <div class="switch-row">
+            <button id="cueOnlyBtn" class="active" type="button">Short cue only</button>
+            <button id="taskCueBtn" type="button">Task + cue</button>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h2>Demo accuracy@1</h2>
+          <div class="metric-grid" id="metrics"></div>
+        </section>
+
+        <section class="panel-section">
+          <h2>Interpretation</h2>
+          <p class="finding" id="findingText"></p>
+        </section>
+
+        <section class="panel-section">
+          <h2>Retrieved nodes</h2>
+          <div class="node-list" id="nodeList"></div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="caption">
+      <strong>Figure 1.</strong>
+      Visual Memory Wiki as a source-grounded visual retrieval loop. Generated image cards improved short-cue retrieval in the tiny demo, but long task prompts degraded CLIP matching. The design implication is that an LLM should first distill the work context into a short visual cue, then retrieve image nodes, then read the attached source Markdown.
+    </section>
+  </main>
+
+  <script>
+    const metrics = {
+      cue: {
+        title: "Short visual cue only",
+        finding: "Generated image cards recover the intended node more often than deterministic text-free cards. This supports the hypothesis that image quality is a retrieval bottleneck.",
+        cueText: "“image card as a doorway”",
+        values: [
+          ["Text search baseline", 83, "baseline"],
+          ["Deterministic text-free cards", 33, "textless"],
+          ["Generated image cards", 67, "generated"]
+        ],
+        walk: ["n02", "n04", "n03", "n04", "n05", "n08"]
+      },
+      task: {
+        title: "Long task context + visual cue",
+        finding: "The generated-card condition drops when the long task prompt is mixed directly into CLIP. The task should be summarized into a short visual cue first.",
+        cueText: "Long task prompt + visual target",
+        values: [
+          ["Text search baseline", 67, "baseline"],
+          ["Deterministic text-free cards", 50, "textless"],
+          ["Generated image cards", 33, "generated"]
+        ],
+        walk: ["n02", "n03", "n03", "n05", "n05", "n03"]
+      }
+    };
+
+    const nodes = [
+      { id: "n01", title: "Image as link", x: 690, y: 520, color: "#cf4f31", note: "The image functions as a visual address." },
+      { id: "n02", title: "Upload to cards", x: 812, y: 462, color: "#2f7d4f", note: "Source notes are chunked into image-handled cards." },
+      { id: "n03", title: "Shared space", x: 942, y: 502, color: "#1f6f8b", note: "Text and image cues meet in CLIP-like coordinates." },
+      { id: "n04", title: "AI walker", x: 770, y: 616, color: "#b9811f", note: "The AI visits a small path instead of reading everything." },
+      { id: "n05", title: "Canvas", x: 930, y: 632, color: "#6c5ce7", note: "The graph can be exported to Obsidian JSON Canvas." },
+      { id: "n08", title: "Grounding", x: 1040, y: 570, color: "#344554", note: "The image is an index; source text remains ground truth." }
+    ];
+
+    const edges = [
+      ["n01", "n02"], ["n02", "n03"], ["n01", "n04"],
+      ["n03", "n05"], ["n04", "n05"], ["n05", "n08"],
+      ["n03", "n08"], ["n02", "n04"]
+    ];
+
+    let mode = "cue";
+    let activeNode = "n02";
+
+    const graphEdges = document.getElementById("graphEdges");
+    const graphNodes = document.getElementById("graphNodes");
+    const metricRoot = document.getElementById("metrics");
+    const nodeList = document.getElementById("nodeList");
+    const findingText = document.getElementById("findingText");
+    const cueText = document.getElementById("cueText");
+    const cueOnlyBtn = document.getElementById("cueOnlyBtn");
+    const taskCueBtn = document.getElementById("taskCueBtn");
+
+    function nodeById(id) {
+      return nodes.find(node => node.id === id);
+    }
+
+    function isWalkEdge(a, b) {
+      const walk = metrics[mode].walk;
+      for (let i = 0; i < walk.length - 1; i++) {
+        if ((walk[i] === a && walk[i + 1] === b) || (walk[i] === b && walk[i + 1] === a)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function drawGraph() {
+      graphEdges.innerHTML = "";
+      graphNodes.innerHTML = "";
+
+      for (const [a, b] of edges) {
+        const na = nodeById(a);
+        const nb = nodeById(b);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", na.x);
+        line.setAttribute("y1", na.y);
+        line.setAttribute("x2", nb.x);
+        line.setAttribute("y2", nb.y);
+        line.setAttribute("class", isWalkEdge(a, b) ? "walk-edge" : "edge");
+        graphEdges.appendChild(line);
+      }
+
+      const walk = metrics[mode].walk;
+      for (const node of nodes) {
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", `graph-node ${node.id === activeNode ? "active" : ""}`);
+        g.setAttribute("transform", `translate(${node.x}, ${node.y})`);
+        g.style.cursor = "pointer";
+        g.addEventListener("click", () => {
+          activeNode = node.id;
+          render();
+        });
+
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("r", node.id === activeNode ? 35 : 28);
+        g.appendChild(circle);
+
+        const inner = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        inner.setAttribute("r", 16);
+        inner.setAttribute("fill", node.color);
+        inner.setAttribute("opacity", ".92");
+        g.appendChild(inner);
+
+        const kind = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        kind.setAttribute("d", motifPath(node.id));
+        kind.setAttribute("fill", "none");
+        kind.setAttribute("stroke", "#fff");
+        kind.setAttribute("stroke-width", "3");
+        kind.setAttribute("stroke-linecap", "round");
+        kind.setAttribute("stroke-linejoin", "round");
+        g.appendChild(kind);
+
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("y", 52);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("class", "svg-label");
+        label.textContent = node.title;
+        g.appendChild(label);
+
+        const step = walk.indexOf(node.id);
+        if (step >= 0) {
+          const badge = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          badge.setAttribute("class", "badge");
+          badge.setAttribute("cx", 28);
+          badge.setAttribute("cy", -28);
+          badge.setAttribute("r", 13);
+          g.appendChild(badge);
+          const badgeText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          badgeText.setAttribute("class", "badge-text");
+          badgeText.setAttribute("x", 28);
+          badgeText.setAttribute("y", -28);
+          badgeText.textContent = step + 1;
+          g.appendChild(badgeText);
+        }
+
+        graphNodes.appendChild(g);
+      }
+    }
+
+    function motifPath(id) {
+      if (id === "n01") return "M-7 9 L-7 -10 L8 -10 L8 9 M-14 14 C-2 3 6 3 16 14";
+      if (id === "n02") return "M-13 -9 L3 -9 L3 8 L-13 8 Z M4 -3 L14 -3 L14 12 L4 12";
+      if (id === "n03") return "M-12 9 L10 -9 M-10 -7 L-2 -2 M2 2 L11 7";
+      if (id === "n04") return "M0 -12 L0 2 M0 2 L-9 13 M0 2 L10 12 M-8 -3 L8 -3";
+      if (id === "n05") return "M-12 -8 L0 -14 L12 -8 L0 -2 Z M-12 10 L0 4 L12 10";
+      return "M0 -14 L10 -4 L7 11 L0 15 L-7 11 L-10 -4 Z";
+    }
+
+    function drawMetrics() {
+      metricRoot.innerHTML = "";
+      for (const [label, value, cls] of metrics[mode].values) {
+        const item = document.createElement("div");
+        item.className = `metric ${cls}`;
+        item.innerHTML = `
+          <div class="metric-label"><span>${label}</span><span>${value}%</span></div>
+          <div class="bar"><span style="--w:${value}%"></span></div>
+        `;
+        metricRoot.appendChild(item);
+      }
+    }
+
+    function drawNodeList() {
+      const active = nodeById(activeNode);
+      nodeList.innerHTML = "";
+      for (const node of nodes) {
+        const card = document.createElement("div");
+        card.className = `node-card ${node.id === activeNode ? "active" : ""}`;
+        card.innerHTML = `<strong>${node.title}</strong><span>${node.note}</span>`;
+        card.addEventListener("click", () => {
+          activeNode = node.id;
+          render();
+        });
+        nodeList.appendChild(card);
+      }
+      findingText.textContent = `${metrics[mode].finding} Selected node: ${active.title}. ${active.note}`;
+    }
+
+    function setMode(nextMode) {
+      mode = nextMode;
+      activeNode = metrics[mode].walk[0];
+      render();
+    }
+
+    function render() {
+      cueOnlyBtn.classList.toggle("active", mode === "cue");
+      taskCueBtn.classList.toggle("active", mode === "task");
+      cueText.textContent = metrics[mode].cueText;
+      drawMetrics();
+      drawGraph();
+      drawNodeList();
+    }
+
+    cueOnlyBtn.addEventListener("click", () => setMode("cue"));
+    taskCueBtn.addEventListener("click", () => setMode("task"));
+
+    render();
+  </script>
+</body>
+</html>
