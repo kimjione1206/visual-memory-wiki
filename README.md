@@ -4,6 +4,14 @@ Visual Memory Wiki is an experimental tool for image-based knowledge exploration
 
 It turns Markdown notes into visual cards, places those cards in a similarity graph, and exports an HTML viewer plus an Obsidian JSON Canvas. The project is intentionally framed as a research prototype, not a finished personal knowledge management product.
 
+<p align="center">
+  <img src="docs/assets/visual-memory-wiki-release-hero.png" alt="Visual Memory Wiki visual abstract" width="100%">
+</p>
+
+<p align="center">
+  <img src="docs/assets/visual-memory-wiki-metrics.png" alt="Visual Memory Wiki retrieval experiment metrics" width="100%">
+</p>
+
 ## Interactive Figure
 
 For a paper-style explanation of the experiment, open:
