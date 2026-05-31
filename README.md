@@ -12,6 +12,12 @@ It turns Markdown notes into visual cards, places those cards in a similarity gr
   <img src="docs/assets/visual-memory-wiki-metrics.png" alt="Visual Memory Wiki retrieval experiment metrics" width="100%">
 </p>
 
+## Background
+
+This project started from a simple question raised in discussions about an "LLM-era wiki": if a knowledge base is meant to be navigated by both humans and language models, should its nodes be reached through raw text links, or through images that act as visual handles?
+
+Most note systems answer this implicitly with text. Visual Memory Wiki is a small, reproducible attempt to actually measure the alternative — treating a generated image as a navigation handle into a node, while keeping the original Markdown as the source of truth. The goal is not a polished product but a clean experiment that turns a speculative tooling idea into runnable code others can inspect, reproduce, and extend.
+
 ## Interactive Figure
 
 For a paper-style explanation of the experiment, open:
@@ -147,6 +153,10 @@ tests/            # smoke tests
 ```
 
 The older root-level scripts are kept as experiment logs for now. New usage should go through `visual-wiki`.
+
+## Project status
+
+Early-stage research prototype, maintained by a single self-taught builder. The code is intentionally small and the evaluation is illustrative rather than a benchmark. Issues, reproductions, and critiques are welcome.
 
 ## License
 
