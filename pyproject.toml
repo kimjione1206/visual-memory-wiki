@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "visual-memory-wiki"
+version = "0.1.0"
+description = "An experimental image-based knowledge exploration tool for Markdown notes."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Visual Memory Wiki contributors" }
+]
+keywords = ["clip", "obsidian", "knowledge-graph", "visual-retrieval", "markdown"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "networkx>=3.0",
+  "numpy>=1.24",
+  "pillow>=10.0",
+  "scikit-learn>=1.3",
+]
+
+[project.optional-dependencies]
+clip = [
+  "sentence-transformers>=2.6",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+visual-wiki = "visual_memory_wiki.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["visual_memory_wiki*"]
